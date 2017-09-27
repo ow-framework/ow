@@ -1,27 +1,18 @@
-// @flow
-export interface OwModuleInterface {
-  load(): Promise<OwModule>
-}
-
 /**
  * Base class for ow modules.
  *
  * @class OwModule
- * @implements {OwModuleInterface}
  */
-class OwModule implements OwModuleInterface {
-  app: Object;
-  name: string;
-
+class OwModule {
   /**
    * Each module receives the app instance it belongs to.
    * By utilizing this app instance, modules may set up routers,
    * event listeners and much more to build any kind of application.
    *
-   * @param {AppInterface} app application instance this module belongs to
+   * @param app application instance this module belongs to
    * @memberof OwModule
    */
-  constructor(app: Object) {
+  constructor(app) {
     this.app = app;
     this.name = this.constructor.name;
   }
@@ -36,7 +27,7 @@ class OwModule implements OwModuleInterface {
    * @memberof OwModule
    * @returns {OwModule} the module itself
    */
-  load = async () => this;
+  load() { return Promise.resolve(this); }
 }
 
-export default OwModule;
+module.exports = OwModule;
