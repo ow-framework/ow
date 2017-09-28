@@ -1,0 +1,8 @@
+docs
+build/index.html
+node_modules
+.eslintrc
+.env
+yarn.lock
+rollup.config.js
+.flowconfig
