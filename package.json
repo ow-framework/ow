@@ -1,6 +1,6 @@
 {
   "name": "ow-core",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "build/umd.js",
   "module": "build/es.js",
   "author": "Patrick Neschkudla <pn@ovos.at>",
