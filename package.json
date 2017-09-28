@@ -5,7 +5,10 @@
   "module": "build/es.js",
   "author": "Patrick Neschkudla <pn@ovos.at>",
   "license": "UNLICENSED",
-  "dependencies": {},
+  "dependencies": {
+    "rollup-plugin-commonjs": "^8.2.1",
+    "rollup-plugin-node-resolve": "^3.0.0"
+  },
   "devDependencies": {
     "buble": "^0.16.0",
     "core-js": "^2.5.1",
@@ -15,10 +18,11 @@
     "eslint-plugin-import": "^2.7.0",
     "eslint-plugin-jsx-a11y": "^6.0.2",
     "flow-bin": "^0.54.1",
-    "jest": "^21.1.0"
+    "jest": "^21.1.0",
+    "rollup": "^0.50.0"
   },
   "scripts": {
-    "build": "buble src --output build --objectAssign",
+    "build": "buble src --output build/es5 --objectAssign --no modules && rollup -c",
     "test": "DB_DEBUG=true jest src",
     "docs": "docsify serve ./docs --watch"
   }

@@ -1,6 +1,6 @@
-const App = require('./App');
-const OwModule = require('./OwModule');
-const events = require('./constants.events');
+import App from './App';
+import OwModule from './OwModule';
+import * as events from '../constants.events';
 
 const constants = {
   events,
@@ -18,4 +18,4 @@ class Ow {
 Ow.OwModule = OwModule;
 Ow.constants = constants;
 
-module.exports = Ow;
+export default Ow;

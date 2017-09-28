@@ -1,4 +1,2 @@
-module.exports = {
-  MODULES_LOADED: 'modules:loaded',
-  SERVER_STARTED: 'ow:started',
-};
+export const MODULES_LOADED = 'modules:loaded';
+export const OW_STARTED = 'ow:started';

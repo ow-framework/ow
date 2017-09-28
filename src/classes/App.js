@@ -1,4 +1,4 @@
-const { MODULES_LOADED } = require('../constants.events');
+import { MODULES_LOADED } from '../constants.events';
 
 let LOG_LEVEL = 'info';
 
@@ -104,4 +104,4 @@ class App {
   }
 }
 
-module.exports = App;
+export default App;

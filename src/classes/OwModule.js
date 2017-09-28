@@ -30,4 +30,4 @@ class OwModule {
   load() { return Promise.resolve(this); }
 }
 
-module.exports = OwModule;
+export default OwModule;

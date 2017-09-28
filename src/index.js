@@ -1,4 +1,4 @@
-require('core-js/fn/object/assign');
-const Ow = require('./classes/Ow');
+import 'core-js/fn/object/assign';
+import Ow from './classes/Ow';
 
-module.exports = Ow;
+export default Ow;
