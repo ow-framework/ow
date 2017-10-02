@@ -65,17 +65,14 @@ class App {
       const modulesToLoad = Object.keys(this.modules);
 
       function loadModule(module = modules[modulesToLoad.shift()]) {
-        return new Promise((resolve2) => {
-          module.load()
+        return module.load()
           .then(() => {
+            console.log(modulesToLoad.length)
             if (modulesToLoad.length) {
               return loadModule(modules[modulesToLoad.shift()]);
             }
-
-            return resolve2();
           })
           .catch(reject);
-        });
       }
 
       return loadModule()
@@ -92,8 +89,8 @@ class App {
       .then(() => {
         console.info('Started ow application...');
         this.trigger(MODULES_LOADED);
+        return this;
       })
-      .then(() => this)
       .catch((e) => {
         console.error(e);
 
