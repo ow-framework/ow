@@ -10,14 +10,15 @@ class App {
   constructor() {
     this.logLevel = LOG_LEVEL;
     this.modules = {};
-    this.listeners = { };
+    this.listeners = {};
     this.logger = console;
+    this.started = false;
   }
 
   on(eventName, fn) {
     this.listeners = {
       ...this.listeners,
-      [eventName]: [...(this.listeners[eventName] || []), fn],
+      [eventName]: [...(this.listeners[eventName] || []), fn]
     };
 
     return this;
@@ -26,7 +27,7 @@ class App {
   off(eventName, fn) {
     if (this.listeners[eventName]) {
       this.listeners[eventName] = [
-        ...this.listeners[eventName].filter(cb => cb !== fn),
+        ...this.listeners[eventName].filter(cb => cb !== fn)
       ];
     }
 
@@ -42,8 +43,10 @@ class App {
   }
 
   addModules(modules = []) {
-    this.modules = modules.reduce((acc, Module) => {
-      if (typeof Module === 'function') {
+    const newModules = modules.reduce((acc, Module) => {
+      let inst;
+
+      if (typeof Module === "function") {
         const m = new Module(this);
 
         acc[m.name] = m;
@@ -52,51 +55,75 @@ class App {
       }
 
       return acc;
-    }, this.modules);
+    }, {});
 
-    return this;
+    this.modules = {
+      ...this.modules,
+      ...newModules,
+    };
+
+    return this._triggerModules('_ensureDependencies', newModules)
+      .then(() => this._triggerModules('load', newModules))
+      .then(() => this);
   }
 
-  _loadModules(modules = this.modules) {
+  _triggerModules(fn, modules = this.modules) {
+    console.debug(`Triggering "${fn}" on modules...`);
+
     // nothing to load, exit
     if (!Object.keys(modules).length) return Promise.resolve();
 
     return new Promise((resolve, reject) => {
-      const modulesToLoad = Object.keys(this.modules);
+      const modulesToHandle = Object.keys(modules);
 
-      function loadModule(module = modules[modulesToLoad.shift()]) {
-        return module.load()
-          .then(() => {
-            console.log(modulesToLoad.length)
-            if (modulesToLoad.length) {
-              return loadModule(modules[modulesToLoad.shift()]);
+      function triggerModule(module = modules[modulesToHandle.shift()]) {
+        console.debug(`${fn}: "${module.name}"`);
+
+        let result = (module[fn] || function() { return Promise.resolve(); })();
+
+        if (typeof result === 'undefined') {
+          result = Promise.resolve();
+        }
+        return result.then(() => {
+            if (modulesToHandle.length) {
+              return triggerModule(modules[modulesToHandle.shift()]);
             }
           })
           .catch(reject);
       }
 
-      return loadModule()
-      .then(resolve)
-      .catch((err) => {
-        console.error("Couldn't load modules.\r\n\r\n", err);
-        reject();
-      });
+      return triggerModule()
+        .then(resolve)
+        .catch(err => {
+          console.error(`Couldn't trigger ${fn} on modules.\r\n\r\n`, err);
+          reject();
+        });
     });
   }
 
   start() {
-    return this._loadModules()
+    console.info(this.started ? `Restarting ow application` : `Starting ow application.`);
+
+    let before = Promise.resolve();
+
+    if (this.started) {
+      before = this._triggerModules("unload", this.modules);
+    }
+
+    return before
+      .then(() => this._triggerModules("ready", this.modules))
       .then(() => {
-        console.info('Started ow application...');
-        this.trigger(MODULES_LOADED);
-        return this;
+        console.info(`Started ow application.`);
+        this.started = true;
       })
-      .catch((e) => {
+      .catch(e => {
         console.error(e);
 
-        console.error('An error occured during the application start sequence.\r\n' +
-            'This is probably not an issue with Ow but a module you loaded.\r\n' +
-            'There is likely more logging output above.');
+        console.error(
+          "An error occured during the application start sequence.\r\n" +
+            "This is probably not an issue with Ow but a module you loaded.\r\n" +
+            "There is likely more logging output above."
+        );
       });
   }
 }

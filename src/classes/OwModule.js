@@ -13,21 +13,25 @@ class OwModule {
    * @memberof OwModule
    */
   constructor(app) {
+    const self = this;
+
     this.app = app;
     this.name = this.constructor.name;
-  }
+    this._dependencies = this.constructor.dependencies;
 
-  /**
-   * "load" is triggered by app instance during startup.
-   * Modules will be loaded in parallel as soon as app.start() is triggered.
-   *
-   * If you have to perform additional actions after all modules have been loaded,
-   * setup an event listener on the app instance to wait on the modules:loaded event.
-   *
-   * @memberof OwModule
-   * @returns {OwModule} the module itself
-   */
-  load() { return Promise.resolve(this); }
+    this.load = function() { return Promise.resolve(self); }
+    this.ready = function() { return Promise.resolve(self); }
+
+    this._ensureDependencies = function() {
+      if (!self._dependencies) return;
+      
+      self._dependencies.forEach(dep => {
+        if (typeof self.app.modules[dep] === 'undefined') {
+          throw new Error(`${self.name} depends on ${dep}, but ${dep} was not loaded before ${self.name}. Check your boot sequence.`);
+        }
+      });
+    }
+  }
 }
 
 export default OwModule;
