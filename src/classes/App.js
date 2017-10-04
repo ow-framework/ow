@@ -17,7 +17,8 @@ function getEnv() {
 class App {
   constructor() {
     this.logLevel = LOG_LEVEL;
-    this.modules = {};
+    this.modules = {}; // module instances
+    this.models = {}; // models to be used by modules
     this.listeners = {};
     this.logger = console;
     this.started = false;

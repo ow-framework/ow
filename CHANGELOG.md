@@ -1,3 +1,6 @@
+# 0.0.7
+- adds ```models``` property of ```Object``` type to **ow** app instances to be used by modules to share models
+
 # 0.0.6
 - adds ```name``` prop to module instance if name is not set (e.g. for ```function``` modules) 
 
