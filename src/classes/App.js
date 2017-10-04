@@ -58,13 +58,19 @@ class App {
   addModules(modules = []) {
     const newModules = modules.reduce((acc, Module) => {
       let inst;
+      const name = Module.name;
 
       if (typeof Module === "function") {
         const m = new Module(this);
 
-        acc[m.name] = m;
+        acc[name] = m;
       } else {
-        acc[Module.name] = Module;
+        acc[name] = Module;
+      }
+      
+      // make sure module has a name
+      if (typeof acc[name].name === 'undefined') {
+        acc[name].name = name;
       }
 
       return acc;
