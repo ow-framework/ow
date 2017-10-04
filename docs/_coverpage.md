@@ -1,8 +1,8 @@
 <!-- _coverpage.md -->
 
-<img src="_media/ow-logo.png" width="100px" />
+<img src="_media/ow-logo.png" alt="ow" width="100px" />
 
-# <small>1.0</small>
+# core <small>1.0</small>
 
 > the fun and easy to use javascript framework
 

@@ -24,6 +24,6 @@
   "scripts": {
     "build": "buble src --output build/es5 --objectAssign --no modules && rollup -c",
     "test": "DB_DEBUG=true jest src",
-    "docs": "docsify serve ./docs --watch"
+    "docs": "docsify serve ./docs --watch --port 9090"
   }
 }

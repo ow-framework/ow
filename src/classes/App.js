@@ -6,6 +6,14 @@ if (typeof process === 'object' && process.env && process.env.LOG_LEVEL) {
   LOG_LEVEL = process.env.LOG_LEVEL;
 }
 
+function getEnv() {
+  if (process && process.env) {
+    return process.env;
+  } else {
+    return global || window;
+  }
+}
+
 class App {
   constructor() {
     this.logLevel = LOG_LEVEL;
@@ -13,6 +21,11 @@ class App {
     this.listeners = {};
     this.logger = console;
     this.started = false;
+    this.env = getEnv();
+
+    process.on("unhandledRejection", error => {
+      console.error(error);
+    });
   }
 
   on(eventName, fn) {
@@ -125,6 +138,17 @@ class App {
             "There is likely more logging output above."
         );
       });
+  }
+
+  stop() {
+    if (this.started) {
+      return this._triggerModules("unload", this.modules)
+        .then(() => {
+          process.off("unhandledRejection");
+        });
+    }
+
+    return Promise.resolve();
   }
 }
 

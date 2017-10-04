@@ -3,7 +3,6 @@
 Creating a new module is as simple as:
 
 ```js
-// @flow
 import { OwModule } from 'ow-core';
 
 class OwExampleModule extends OwModule {
