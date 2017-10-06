@@ -1,3 +1,6 @@
+# 0.0.9
+- fix unhandled rejection definition
+
 # 0.0.8
 - adds ```silent``` option to suppress logging
 

@@ -32,7 +32,7 @@ class App {
       this.logger = { info: () => {}, log: () => {}, debug: () => {}, error: () => {}, warn: () => {} };
     }
 
-    process.on("unhandledRejection.ow", error => {
+    process.on("unhandledRejection", error => {
       this.logger.error(error);
     });
   }
