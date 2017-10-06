@@ -1,3 +1,6 @@
+# 0.0.8
+- adds ```silent``` option to suppress logging
+
 # 0.0.7
 - adds ```models``` property of ```Object``` type to **ow** app instances to be used by modules to share models
 
