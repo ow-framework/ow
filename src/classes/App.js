@@ -15,7 +15,7 @@ function getEnv() {
 }
 
 class App {
-  constructor() {
+  constructor({ silent = false } = {}) {
     this.logLevel = LOG_LEVEL;
     this.modules = {}; // module instances
     this.models = {}; // models to be used by modules
@@ -24,8 +24,16 @@ class App {
     this.started = false;
     this.env = getEnv();
 
-    process.on("unhandledRejection", error => {
-      console.error(error);
+    if (typeof this.logger.debug === 'undefined') {
+      this.logger.debug = this.logger.info;
+    }
+
+    if (silent) {
+      this.logger = { info: () => {}, log: () => {}, debug: () => {}, error: () => {}, warn: () => {} };
+    }
+
+    process.on("unhandledRejection.ow", error => {
+      this.logger.error(error);
     });
   }
 
@@ -49,7 +57,7 @@ class App {
   }
 
   trigger(eventName) {
-    console.debug(`Event "${eventName}" fired`);
+    this.logger.debug(`Event "${eventName}" fired`);
 
     if (this.listeners[eventName]) {
       this.listeners[eventName].forEach(fn => fn());
@@ -88,7 +96,7 @@ class App {
   }
 
   _triggerModules(fn, modules = this.modules) {
-    console.debug(`Triggering "${fn}" on modules...`);
+    this.logger.debug(`Triggering "${fn}" on modules...`);
 
     // nothing to load, exit
     if (!Object.keys(modules).length) return Promise.resolve();
@@ -96,8 +104,8 @@ class App {
     return new Promise((resolve, reject) => {
       const modulesToHandle = Object.keys(modules);
 
-      function triggerModule(module = modules[modulesToHandle.shift()]) {
-        console.debug(`${fn}: "${module.name}"`);
+      const triggerModule = (module = modules[modulesToHandle.shift()]) => {
+        this.logger.debug(`${fn}: "${module.name}"`);
 
         let result = (module[fn] || function() { return Promise.resolve(); })();
 
@@ -115,14 +123,14 @@ class App {
       return triggerModule()
         .then(resolve)
         .catch(err => {
-          console.error(`Couldn't trigger ${fn} on modules.\r\n\r\n`, err);
+          this.logger.error(`Couldn't trigger ${fn} on modules.\r\n\r\n`, err);
           reject();
         });
     });
   }
 
   start() {
-    console.info(this.started ? `Restarting ow application` : `Starting ow application.`);
+    this.logger.info(this.started ? `Restarting ow application` : `Starting ow application.`);
 
     let before = Promise.resolve();
 
@@ -133,13 +141,13 @@ class App {
     return before
       .then(() => this._triggerModules("ready", this.modules))
       .then(() => {
-        console.info(`Started ow application.`);
+        this.logger.info(`Started ow application.`);
         this.started = true;
       })
       .catch(e => {
-        console.error(e);
+        this.logger.error(e);
 
-        console.error(
+        this.logger.error(
           "An error occured during the application start sequence.\r\n" +
             "This is probably not an issue with Ow but a module you loaded.\r\n" +
             "There is likely more logging output above."
@@ -149,10 +157,7 @@ class App {
 
   stop() {
     if (this.started) {
-      return this._triggerModules("unload", this.modules)
-        .then(() => {
-          process.off("unhandledRejection");
-        });
+      return this._triggerModules("unload", this.modules);
     }
 
     return Promise.resolve();
