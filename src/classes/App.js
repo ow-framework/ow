@@ -158,11 +158,11 @@ class App {
   }
 
   stop() {
+    process.removeListener('unhandledRejection', unhandledRejection);
+
     if (this.started) {
       return this._triggerModules("unload", this.modules);
     }
-
-    process.removeListener('unhandledRejection', unhandledRejection);
 
     return Promise.resolve();
   }
