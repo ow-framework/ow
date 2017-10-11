@@ -1,3 +1,6 @@
+# 0.0.10
+- correctly remove event listener for unhandledRejections once app is stopped
+
 # 0.0.9
 - fix unhandled rejection definition
 

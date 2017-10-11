@@ -14,6 +14,10 @@ function getEnv() {
   }
 }
 
+function unhandledRejection(error) {
+  this.logger.error(error);
+}
+
 class App {
   constructor({ silent = false } = {}) {
     this.logLevel = LOG_LEVEL;
@@ -32,9 +36,7 @@ class App {
       this.logger = { info: () => {}, log: () => {}, debug: () => {}, error: () => {}, warn: () => {} };
     }
 
-    process.on("unhandledRejection", error => {
-      this.logger.error(error);
-    });
+    process.on("unhandledRejection", unhandledRejection);
   }
 
   on(eventName, fn) {
@@ -159,6 +161,8 @@ class App {
     if (this.started) {
       return this._triggerModules("unload", this.modules);
     }
+
+    process.removeListener('unhandledRejection', unhandledRejection);
 
     return Promise.resolve();
   }
