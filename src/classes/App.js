@@ -14,8 +14,8 @@ function getEnv() {
   }
 }
 
-function unhandledRejection(error) {
-  this.logger.error(error);
+function unhandledRejection(logger, error) {
+  logger.error(error);
 }
 
 class App {
@@ -23,9 +23,9 @@ class App {
     this.logLevel = LOG_LEVEL;
     this.modules = {}; // module instances
     this.models = {}; // models to be used by modules
-    this.listeners = {};
+    this._listeners = {};
     this.logger = console;
-    this.started = false;
+    this._started = false;
     this.env = getEnv();
 
     if (typeof this.logger.debug === 'undefined') {
@@ -36,22 +36,24 @@ class App {
       this.logger = { info: () => {}, log: () => {}, debug: () => {}, error: () => {}, warn: () => {} };
     }
 
-    process.on("unhandledRejection", unhandledRejection);
+    this.unhandledRejection = unhandledRejection.bind(this, this.logger);
+
+    process.on("unhandledRejection", this.unhandledRejection);
   }
 
   on(eventName, fn) {
-    this.listeners = {
-      ...this.listeners,
-      [eventName]: [...(this.listeners[eventName] || []), fn]
+    this._listeners = {
+      ...this._listeners,
+      [eventName]: [...(this._listeners[eventName] || []), fn]
     };
 
     return this;
   }
 
   off(eventName, fn) {
-    if (this.listeners[eventName]) {
-      this.listeners[eventName] = [
-        ...this.listeners[eventName].filter(cb => cb !== fn)
+    if (this._listeners[eventName]) {
+      this._listeners[eventName] = [
+        ...this._listeners[eventName].filter(cb => cb !== fn)
       ];
     }
 
@@ -61,8 +63,8 @@ class App {
   trigger(eventName) {
     this.logger.debug(`Event "${eventName}" fired`);
 
-    if (this.listeners[eventName]) {
-      this.listeners[eventName].forEach(fn => fn());
+    if (this._listeners[eventName]) {
+      this._listeners[eventName].forEach(fn => fn());
     }
   }
 
@@ -132,11 +134,11 @@ class App {
   }
 
   start() {
-    this.logger.info(this.started ? `Restarting ow application` : `Starting ow application.`);
+    this.logger.info(this._started ? `Restarting ow application` : `Starting ow application.`);
 
     let before = Promise.resolve();
 
-    if (this.started) {
+    if (this._started) {
       before = this._triggerModules("unload", this.modules);
     }
 
@@ -144,7 +146,7 @@ class App {
       .then(() => this._triggerModules("ready", this.modules))
       .then(() => {
         this.logger.info(`Started ow application.`);
-        this.started = true;
+        this._started = true;
       })
       .catch(e => {
         this.logger.error(e);
@@ -158,9 +160,9 @@ class App {
   }
 
   stop() {
-    process.removeListener('unhandledRejection', unhandledRejection);
+    process.removeListener('unhandledRejection', this.unhandledRejection);
 
-    if (this.started) {
+    if (this._started) {
       return this._triggerModules("unload", this.modules);
     }
 
